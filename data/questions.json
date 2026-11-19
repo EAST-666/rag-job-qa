@@ -1,0 +1,259 @@
+[
+  {
+    "num": 1,
+    "category": "A",
+    "question": "这 410 条岗位里，出现频率最高的五个技能分别是什么？",
+    "standard": "需求分析/沟通(275条)、算法/模型训练(237条)、Python(193条)、Agent/智能体(189条)、知识库/RAG(130条)",
+    "rule": {
+      "any": [
+        "275",
+        "237",
+        "193",
+        "189",
+        "130"
+      ],
+      "min_hits": 3
+    }
+  },
+  {
+    "num": 2,
+    "category": "A",
+    "question": "样本中\"要写代码\"的型 B 岗位占多少比例？",
+    "standard": "55 条，占 13.4%",
+    "rule": {
+      "all": [
+        "55"
+      ],
+      "any": [
+        "13.4",
+        "13%"
+      ]
+    }
+  },
+  {
+    "num": 3,
+    "category": "A",
+    "question": "提到 Coze 或扣子的岗位有多少条？",
+    "standard": "16 条（3.9%）",
+    "rule": {
+      "all": [
+        "16"
+      ]
+    }
+  },
+  {
+    "num": 4,
+    "category": "A",
+    "question": "提到\"评测\"或 badcase 的岗位有多少条？",
+    "standard": "59 条（14.4%）",
+    "rule": {
+      "all": [
+        "59"
+      ]
+    }
+  },
+  {
+    "num": 5,
+    "category": "A",
+    "question": "明确写 Python 的岗位有多少条？",
+    "standard": "193 条（47.1%）",
+    "rule": {
+      "all": [
+        "193"
+      ]
+    }
+  },
+  {
+    "num": 6,
+    "category": "A",
+    "question": "样本里明确是实习岗的有多少条？",
+    "standard": "106 条（25.9%）",
+    "rule": {
+      "all": [
+        "106"
+      ]
+    }
+  },
+  {
+    "num": 7,
+    "category": "A",
+    "question": "提到硕士学历要求的岗位有多少条？",
+    "standard": "134 条",
+    "rule": {
+      "all": [
+        "134"
+      ]
+    }
+  },
+  {
+    "num": 8,
+    "category": "A",
+    "question": "这些岗位的样本来自哪几个渠道？",
+    "standard": "24365、实习僧、51job、BOSS 截图、手工精读",
+    "rule": {
+      "any": [
+        "24365",
+        "实习僧",
+        "51job",
+        "BOSS",
+        "手工"
+      ],
+      "min_hits": 3
+    }
+  },
+  {
+    "num": 9,
+    "category": "A",
+    "question": "哪类岗位更强调\"知识库/RAG\"？举一个具体岗位例子",
+    "standard": "AI 应用开发/Agent；例：链坊科技、养生堂等",
+    "rule": {
+      "any": [
+        "知识库",
+        "RAG",
+        "rag"
+      ],
+      "min_hits": 1,
+      "need_example": true
+    }
+  },
+  {
+    "num": 10,
+    "category": "A",
+    "question": "非 Coding 的型 A 岗位占多少比例？",
+    "standard": "355 条，占 86.6%",
+    "rule": {
+      "all": [
+        "355"
+      ],
+      "any": [
+        "86.6",
+        "86%"
+      ]
+    }
+  },
+  {
+    "num": 11,
+    "category": "B",
+    "question": "字节跳动杭州办公室在第几层楼？",
+    "standard": "资料中没有（不编）",
+    "rule": {
+      "refuse": true
+    }
+  },
+  {
+    "num": 12,
+    "category": "B",
+    "question": "这些岗位的面试通过率大概是多少？",
+    "standard": "资料中没有（不编）",
+    "rule": {
+      "refuse": true
+    }
+  },
+  {
+    "num": 13,
+    "category": "B",
+    "question": "阿里的股票代码是多少？",
+    "standard": "资料中没有（不编）",
+    "rule": {
+      "refuse": true
+    }
+  },
+  {
+    "num": 14,
+    "category": "B",
+    "question": "这份样本里各公司给实习生的转正比例是多少？",
+    "standard": "资料中没有（不编）",
+    "rule": {
+      "refuse": true
+    }
+  },
+  {
+    "num": 15,
+    "category": "B",
+    "question": "浙江省 2027 年 AI 岗位总量会涨多少？",
+    "standard": "资料中没有（不编）",
+    "rule": {
+      "refuse": true
+    }
+  },
+  {
+    "num": 16,
+    "category": "C",
+    "question": "JD 里没写学历要求的岗位，是不是就一定不卡学历？",
+    "standard": "不能确定，只能说文本里未体现",
+    "rule": {
+      "any": [
+        "不能确定",
+        "不确定",
+        "无法确定",
+        "未体现"
+      ],
+      "min_hits": 1
+    }
+  },
+  {
+    "num": 17,
+    "category": "C",
+    "question": "写着\"硕士优先\"的岗位，本科生能投吗？",
+    "standard": "可以投但优先级低，资料未给结论",
+    "rule": {
+      "any": [
+        "可以",
+        "能投",
+        "优先"
+      ],
+      "min_hits": 1
+    }
+  },
+  {
+    "num": 18,
+    "category": "C",
+    "question": "两个月实习能投要求\"连续 3 个月以上\"的岗位吗？",
+    "standard": "资料未规定例外，通常需协商",
+    "rule": {
+      "any": [
+        "协商",
+        "不符合",
+        "需",
+        "例外",
+        "不满足",
+        "不能",
+        "不够"
+      ],
+      "min_hits": 1
+    }
+  },
+  {
+    "num": 19,
+    "category": "C",
+    "question": "薪资 200-250 元/天，一个月大概多少钱？",
+    "standard": "按每月 20 天约 4000-5000 元",
+    "rule": {
+      "any": [
+        "4000",
+        "5000",
+        "4千",
+        "5千"
+      ],
+      "min_hits": 1
+    }
+  },
+  {
+    "num": 20,
+    "category": "C",
+    "question": "只有课程基础、没有实习经历的人，适合先投哪类岗位？",
+    "standard": "资料无个体建议，可按型 A 岗位推断",
+    "rule": {
+      "any": [
+        "推断",
+        "推测",
+        "资料没有",
+        "建议",
+        "适合",
+        "可投",
+        "优先投"
+      ],
+      "min_hits": 1
+    }
+  }
+]

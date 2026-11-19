@@ -1,0 +1,17 @@
+# 密钥与本地产物，不要提交
+key.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 实验输出（想公开结果可以删掉这几行）
+eval_result.json
+result_*.json
+step2_last_run.json
+
+# 语料可能含公司名与联系方式，默认不入库
+corpus.json
+jobs.json
