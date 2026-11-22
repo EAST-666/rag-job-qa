@@ -1,0 +1,12 @@
+[
+ {"num": 101, "question": "大家最爱强调的几项能力是哪些？", "gold_titles": ["1. 出现频率最高的五项技能", "需求分析 / 沟通", "Python", "Agent / 智能体"], "gold_job_keywords": []},
+ {"num": 102, "question": "需要动手写程序的那一类岗位多不多？", "gold_titles": ["要写代码（型 B"], "gold_job_keywords": []},
+ {"num": 103, "question": "做智能体平台产品（比如扣子这种）的岗位数量是多少？", "gold_titles": ["Coze / 扣子"], "gold_job_keywords": []},
+ {"num": 104, "question": "看重模型效果验证和错误案例分析的公司有多少？", "gold_titles": ["模型评测 / badcase"], "gold_job_keywords": []},
+ {"num": 105, "question": "要求会写提示词的岗位出现频率如何？", "gold_titles": ["Prompt / 提示词工程"], "gold_job_keywords": []},
+ {"num": 106, "question": "要求会数据库查询语言的有多少岗位？", "gold_titles": ["SQL / 数据库"], "gold_job_keywords": []},
+ {"num": 107, "question": "要求能部署上线、搞容器化的岗位比例？", "gold_titles": ["Docker / 部署"], "gold_job_keywords": []},
+ {"num": 108, "question": "这几百条数据是从哪些网站弄来的？", "gold_titles": ["样本"], "gold_job_keywords": []},
+ {"num": 109, "question": "哪些岗位会用到检索增强这套东西？给个例子", "gold_titles": ["知识库 / RAG"], "gold_job_keywords": ["知识库", "RAG"]},
+ {"num": 110, "question": "不用敲代码的那类岗位占比多少？", "gold_titles": ["非 Coding（型 A"], "gold_job_keywords": []}
+]

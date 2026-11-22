@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """20 题自动评测：跑一遍、判一遍、算三类分数。
 
     python eval_20q.py                 全量 20 题（约 40 秒）
@@ -25,10 +25,16 @@ def main():
     ap.add_argument("--only", default="", help="只跑某一类：A / B / C")
     ap.add_argument("--dry", action="store_true")
     ap.add_argument("--out", default="eval_result.json")
+    ap.add_argument("--retriever", default="bm25", choices=["bm25", "hybrid"],
+                    help="bm25=关键词单路；hybrid=BM25+向量 RRF 混合")
     args = ap.parse_args()
 
     chunks = build_chunks(args.chunk, args.overlap)
     index = BM25Index(chunks)
+    if args.retriever == "hybrid":
+        from ragjob.hybrid import HybridRetriever
+        from ragjob.vector import VectorIndex
+        index = HybridRetriever(index, VectorIndex(chunks))
     print(f"[配置] 切段={args.chunk} 重叠={args.overlap} topk={args.topk} ｜ {len(chunks)} 段")
 
     items = load_questions()
@@ -43,7 +49,7 @@ def main():
     for item in items:
         question = item["question"]
         t0 = time.perf_counter()
-        hits = index.search_with_stats_boost(question, args.topk)
+        hits = index.search(question, args.topk)
         context = build_context(chunks, hits)
         ms_retrieval = (time.perf_counter() - t0) * 1000
 
@@ -93,3 +99,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

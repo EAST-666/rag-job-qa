@@ -15,3 +15,10 @@ step2_last_run.json
 # 语料可能含公司名与联系方式，默认不入库
 corpus.json
 jobs.json
+
+# 向量缓存（可重新生成）
+data/vectors_*.npy
+
+# 单次评测输出
+eval_hybrid_*.json
+recall_result.json

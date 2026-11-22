@@ -1,16 +1,21 @@
 # 岗位知识库问答：检索策略评测
 
-用手上的 410 条招聘 JD 搭了个知识库问答，主要目的是把「切段长度」「召回条数」这些参数当成变量去测，而不是凭感觉调。
+用手上的 410 条招聘 JD 搭了个知识库问答，主要目的是把「切段长度」「召回条数」「召回算法」这些参数当成变量去测，而不是凭感觉调。
 
-结论：切段从不切改成 300 字，输入 token 少了 63%，但生成耗时基本没动（2.2 秒左右）。瓶颈在模型侧，不在上下文长度。
+两个结论：
+
+1. 切段从不切改成 300 字，输入 token 少了 63%，但生成耗时基本没动（2.2 秒左右）。瓶颈在模型侧，不在上下文长度。
+2. 加上向量检索做混合召回，同义改写的题召回从 20% 提到 50%，但端到端 20 题仍然是 19/20 —— 瓶颈已经从「召回」挪到了「生成与判分」。
 
 ## 效果
 
 | 指标 | 结果 |
 |---|---|
 | 20 题总分 | 19 / 20（A 9/10、B 5/5、C 5/5） |
-| 平均输入 token | 870（不切段时 3046） |
-| 检索耗时 | 2–4 ms，纯 CPU |
+| 召回·关键词型（10 题） | Recall@5 0.90、MRR 0.80（纯 BM25 时 0.90 / 0.72） |
+| 召回·同义改写（10 题） | Recall@5 0.50、MRR 0.38（纯 BM25 时 0.20 / 0.20） |
+| 平均输入 token | 855（不切段时 3046） |
+| 检索耗时 | 2–4 ms（BM25）/ 20–40 ms（含向量），纯 CPU |
 | 生成耗时 | 0.9–2.3 s |
 
 题目和标准答案都在 `data/questions.json`，判分脚本 `ragjob/judge.py` 自动跑。题分三类：
@@ -23,18 +28,21 @@
 
 ```bash
 pip install -r requirements.txt
-# key 放在 key.txt 里（只写 key，不带引号），或用环境变量指定路径
+# key 放在 key.txt 里（只写 key，不带引号、不要 BOM），或用环境变量指定路径
 export RAG_API_KEY_FILE=/path/to/key.txt
 
-python eval_20q.py --limit 3     # 先跑 3 题
-python eval_20q.py               # 全量 20 题
+python eval_20q.py --limit 3              # 先跑 3 题
+python eval_20q.py                        # 全量 20 题（纯 BM25）
+python eval_20q.py --retriever hybrid     # 全量 20 题（混合召回）
+python tools/eval_recall.py               # 只测召回，不调 API
 ```
 
 不花钱的玩法：
 
 ```bash
-python search_demo.py        # 三条查询，看捞到哪些段
-python gen_demo.py --dry     # 只看拼出来的上下文
+python search_demo.py                            # 三条查询，看捞到哪些段
+python gen_demo.py --dry                         # 只看拼出来的上下文
+python eval_20q.py --dry --retriever hybrid      # 只跑检索与拼上下文
 ```
 
 ## 实验一：切段 0 / 300 / 500
@@ -59,18 +67,41 @@ python gen_demo.py --dry     # 只看拼出来的上下文
 |---|---|---|
 | A 类答对 | 6/10 → 8/10 → 9/10（手调了三轮 top-k） | 9/10（一次跑完） |
 | B 类拒答 | 5/5 | 5/5 |
-| 平均输入 token | 1629 | 870 |
+| 平均输入 token | 1629 | 855–870 |
 | 检索耗时 | 295 ms | 2–4 ms |
 | 能改什么 | 提示词、top-k | 检索算法、权重、判分规则、批量扫参 |
 
 两边最后水平一样，但代码版能定位到平台版查不出来的问题，成本也低一半。
 
+## 实验三：BM25 / 向量 / 混合 三种召回
+
+向量用 `fastembed` + `BAAI/bge-small-zh-v1.5`（ONNX，512 维，CPU 就能跑），
+两路结果用加权 RRF 融合（`1/(60+rank)`，BM25 权重 2、向量权重 1）。
+
+两组题故意分开，因为它们考的东西不一样：
+
+| 题组 | 策略 | Recall@5 | MRR |
+|---|---|---|---|
+| 关键词型（原题 10 条） | BM25 | 0.90 | 0.72 |
+| | 向量 | 0.80 | 0.73 |
+| | **混合** | 0.90 | **0.80** |
+| 同义改写（10 条口语化提问） | BM25 | 0.20 | 0.20 |
+| | 向量 | 0.50 | 0.32 |
+| | **混合** | **0.50** | **0.38** |
+
+三个经验：
+
+- **等权混合会变差**。第一版 1:1 融合，关键词型 MRR 从 0.72 掉到 0.67 —— BM25 原本排第 1 的被向量那路挤到第 3。改成 2:1 才两头发都好。
+- **统计类问题要单独路由**。问「多少条」「占比」时，向量会把语义相近的 JD 段顶上来、把统计段挤掉；这里保留了「统计段优先」的策略，并挑与问题词面重合最多的那条。
+- **混合没有让端到端变好**。20 题还是 19/20，只是错题从 Q5（Python 条数）换成了 Q8（渠道数）。说明瓶颈不在召回，在生成与判分——这是下一步该动的地方。
+
 ## 没解决的问题
 
-1. **IDF 太低**：`明确写 Python 的岗位有多少条` 两边都错。Python 在 193 条 JD 里都出现，IDF 接近 0，统计那段永远排不过普通 JD 段。调大 top-k 没用，得按字段建索引或做混合检索。
+1. **统计类问题仍不稳**：`明确写 Python 的岗位有多少条` 在纯 BM25 下必错（Python 出现在 193 条 JD 里，IDF 接近 0）；混合召回能修好它，但 `这些岗位的样本来自哪几个渠道` 又掉了。根因是「用检索去解决统计问题」本身别扭，正解是按字段建结构化索引、用 SQL 算。
 2. **跨文档**：`哪类岗位更强调 RAG，举个例子` 答不出具体岗位——统计在汇总文档，岗位名在明细文档，一次只能命中一边。
 3. **判分器有偏差**：规则判分只认关键词和数字，换个说法可能就判错。19/20 是按这套规则算出来的，不是绝对值。
 4. **语料有噪声**：实习僧页面正文混进过 JS 碎片（`"event_id":"lesson_"` 这种），用 `clean_text()` 清过，但清洗本身也可能误删。
+5. **向量没做增量**：新增语料要整个重建 `data/vectors_bge_small_zh.npy`，1820 段还好，上万段就该上向量库了。
 
 ## 目录
 
@@ -79,15 +110,20 @@ ragjob/            核心代码
   config.py        路径、模型参数、提示词、阈值
   corpus.py        读语料、清洗、切段
   bm25.py          bigram 分词 + BM25 索引（带统计类查询的 boost）
+  vector.py        fastembed + bge-small-zh 向量检索（.npy 缓存）
+  hybrid.py        加权 RRF 融合 + 统计类问题路由
   generate.py      拼上下文、调 DeepSeek API
   judge.py         规则判分（A/B/C 三套）
   build_questions.py  20 题 + 标准答案 + 判分规则
-data/questions.json  题库
+data/questions.json            题库（20 题）
+data/questions_paraphrase.json 同义改写题（10 条，测语义召回）
+data/recall_result.json        召回评测结果
 search_demo.py     检索演示，不调 API
 gen_demo.py        单条问答，打印三段耗时
 chunk_experiment.py 切段实验
-eval_20q.py        20 题评测
+eval_20q.py        20 题评测（--retriever bm25|hybrid）
 inspect_retrieval.py 看某条查询为什么排成这样
+tools/eval_recall.py  Recall@5 / MRR，两组题 × 三种策略
 tools/build_report.py 导成 xlsx
 ```
 
@@ -99,4 +135,4 @@ tools/build_report.py 导成 xlsx
 
 找实习时顺手做的。手上有这么多 JD，与其做个聊天机器人，不如拿它测点能说清楚的东西。
 
-模型 `deepseek-chat`，temperature 0.3；检索是 BM25 + 中文 bigram，没用向量库。
+模型 `deepseek-chat`，temperature 0.3；检索是 BM25（中文 bigram）+ bge-small-zh 向量，加权 RRF 融合。
